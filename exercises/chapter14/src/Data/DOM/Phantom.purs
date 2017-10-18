@@ -6,6 +6,9 @@ module Data.DOM.Phantom
   , class IsValue
   , toValue
 
+  , Pixel(..)
+  , Boolean(..)
+
   , a
   , p
   , img
@@ -15,6 +18,8 @@ module Data.DOM.Phantom
   , src
   , width
   , height
+  , checked
+  , disabled
 
   , attribute, (:=)
   , text
@@ -37,6 +42,8 @@ newtype Element = Element
 data Content
   = TextContent String
   | ElementContent Element
+
+data Boolean = True | False
 
 newtype Attribute = Attribute
   { key          :: String
@@ -67,11 +74,25 @@ instance stringIsValue :: IsValue String where
 instance intIsValue :: IsValue Int where
   toValue = show
 
+instance trueIsValue :: IsValue Boolean where
+  toValue True = "true"
+  toValue False = "false"
+
+newtype Pixel = Pixel String
+
+instance pixelIsValue :: IsValue Pixel where
+  toValue (Pixel s) = s
+
 attribute :: forall a. IsValue a => AttributeKey a -> a -> Attribute
-attribute (AttributeKey key) value = Attribute
-  { key: key
-  , value: toValue value
-  }
+attribute (AttributeKey key) value
+  | toValue value == "true" = Attribute
+    { key: key
+    , value: key
+    }
+  | otherwise = Attribute
+    { key: key
+    , value: toValue value
+    }
 
 infix 4 attribute as :=
 
@@ -93,11 +114,18 @@ _class = AttributeKey "class"
 src :: AttributeKey String
 src = AttributeKey "src"
 
-width :: AttributeKey Int
+width :: AttributeKey Pixel
 width = AttributeKey "width"
 
-height :: AttributeKey Int
+height :: AttributeKey Pixel
 height = AttributeKey "height"
+
+checked :: AttributeKey Boolean
+checked = AttributeKey "checked"
+
+disabled :: AttributeKey Boolean
+disabled = AttributeKey "disabled"
+
 
 render :: Element -> String
 render (Element e) =

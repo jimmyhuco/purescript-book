@@ -7,6 +7,7 @@ import Control.Monad.Except.Trans (ExceptT, throwError)
 import Control.Monad.State.Trans (StateT, runStateT, get, put)
 import Control.Monad.Writer.Trans (WriterT, runWriterT, tell)
 import Control.MonadPlus (guard)
+import Data.Array (many)
 import Data.Either (Either)
 import Data.Identity (Identity)
 import Data.String (take, drop, toUpper, toLower)
@@ -50,3 +51,18 @@ lower = do
 
 runParser :: forall a. Parser a -> String -> Either Errors (Tuple (Tuple a String) Log)
 runParser p = runExcept <<< runWriterT <<< runStateT p
+
+manyA :: Parser String
+manyA = do
+  s <- split
+  guard $ s == "a"
+  pure s
+
+manyB :: Parser String
+manyB = do
+  s <- split
+  guard $ s == "b"
+  pure s
+
+abComponent :: Parser (Array String)
+abComponent = (<>) <$> many manyA <*> many manyB

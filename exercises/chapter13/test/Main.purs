@@ -12,7 +12,7 @@ import Data.Function (on)
 import Data.List (List(..), fromFoldable)
 import Merge (mergeWith, mergePoly, merge)
 import Sorted (sorted)
-import Test.QuickCheck (quickCheck)
+import Test.QuickCheck (quickCheck, (<?>))
 import Tree (Tree, member, insert, toArray, anywhere)
 
 isSorted :: forall a. (Ord a) => Array a -> Boolean
@@ -40,7 +40,12 @@ main :: Eff ( console :: CONSOLE
 main = do
   -- Tests for module 'Merge'
 
-  quickCheck $ \xs ys -> isSorted $ merge (sorted xs) (sorted ys)
+  quickCheck $ \xs ys ->
+    let
+      result = merge (sorted xs) (sorted ys)
+    in
+      isSorted result <?> (show xs <> " not a subarray of " <> show result)
+
   quickCheck $ \xs ys -> xs `isSubarrayOf` merge xs ys
 
   quickCheck $ \xs ys -> isSorted $ ints $ mergePoly (sorted xs) (sorted ys)

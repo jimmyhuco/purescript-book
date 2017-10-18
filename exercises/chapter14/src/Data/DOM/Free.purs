@@ -22,10 +22,12 @@ module Data.DOM.Free
   , elem
 
   , render
+  , test1
   ) where
 
 import Prelude
 
+import Control.Monad.Eff.Console (log)
 import Control.Monad.Free (Free, runFreeM, liftF)
 import Control.Monad.Writer (Writer, execWriter)
 import Control.Monad.Writer.Class (tell)
@@ -41,10 +43,12 @@ newtype Element = Element
 data ContentF a
   = TextContent String a
   | ElementContent Element a
+  | CommentContent String a
 
 instance functorContentF :: Functor ContentF where
   map f (TextContent s x) = TextContent s (f x)
   map f (ElementContent e x) = ElementContent e (f x)
+  map f (CommentContent c x) = CommentContent c (f x)
 
 type Content = Free ContentF
 
@@ -64,6 +68,9 @@ element name attribs content = Element
 
 text :: String -> Content Unit
 text s = liftF $ TextContent s unit
+
+comment :: String -> Content Unit
+comment c = liftF $ CommentContent c unit
 
 elem :: Element -> Content Unit
 elem e = liftF $ ElementContent e unit
@@ -137,10 +144,22 @@ render = execWriter <<< renderElement
           tell e.name
           tell ">"
 
-        renderContentItem :: forall a. ContentF (Content a) -> Writer String (Content a)
+        renderContentItem :: ContentF (Content Unit) -> Writer String (Content Unit)
         renderContentItem (TextContent s rest) = do
           tell s
           pure rest
         renderContentItem (ElementContent e' rest) = do
           renderElement e'
           pure rest
+
+        renderContentItem (CommentContent c rest) = do
+          tell $ "<!--" <> c <> "-->"
+          pure rest
+
+
+
+test1 = log $ render $ p [ _class := "main" ] $ do
+  elem $ img [ src := "1.jpg" ]
+  text "A cat!"
+  elem $ img [ src := "1.jpg" ]
+  comment "this is comment"

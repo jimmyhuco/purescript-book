@@ -13,6 +13,8 @@ module Data.DOM.Smart
   , src
   , width
   , height
+  , checked
+  , disabled
 
   , attribute, (:=)
   , text
@@ -64,6 +66,13 @@ attribute (AttributeKey key) value = Attribute
 
 infix 4 attribute as :=
 
+attributeWithEmpty :: AttributeKey -> Attribute
+attributeWithEmpty (AttributeKey key) = Attribute
+  { key: key
+  , value: ""
+  }
+
+
 a :: Array Attribute -> Array Content -> Element
 a attribs content = element "a" attribs (Just content)
 
@@ -88,6 +97,12 @@ width = AttributeKey "width"
 height :: AttributeKey
 height = AttributeKey "height"
 
+disabled :: Attribute
+disabled = attributeWithEmpty (AttributeKey "disabled")
+
+checked :: Attribute
+checked = attributeWithEmpty (AttributeKey "checked")
+
 render :: Element -> String
 render (Element e) =
     "<" <> e.name <>
@@ -95,7 +110,9 @@ render (Element e) =
     renderContent e.content
   where
     renderAttribute :: Attribute -> String
-    renderAttribute (Attribute x) = x.key <> "=\"" <> x.value <> "\""
+    renderAttribute (Attribute x)
+      | x.value == "" = x.key
+      | otherwise = x.key <> "=\"" <> x.value <> "\""
 
     renderContent :: Maybe (Array Content) -> String
     renderContent Nothing = " />"

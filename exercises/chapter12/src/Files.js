@@ -27,3 +27,10 @@ exports.writeFileImpl = function(path, data, onSuccess, onFailure) {
         });
     };
 };
+
+exports.setTimeoutImpl = function(milliseconds, callback) {
+    return function() {
+        setTimeout(callback, milliseconds);
+        return {};
+    };
+};

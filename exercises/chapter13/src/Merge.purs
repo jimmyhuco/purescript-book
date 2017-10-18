@@ -18,5 +18,5 @@ mergeWith f = \xs ys ->
     go acc xs  Nil = reverse acc <> xs
     go acc xs@(Cons x xs') ys@(Cons y ys') =
       case compare (f x) (f y) of
-        LT -> go (Cons x acc) xs' ys
+        GT -> go (Cons x acc) xs' ys
         _  -> go (Cons y acc) xs  ys'
